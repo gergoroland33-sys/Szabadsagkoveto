@@ -17,9 +17,14 @@
         .day-name { font-size: 7px; text-transform: uppercase; color: #64748b; font-weight: 800; display: block; line-height: 1; }
         
         .weekend { background: #141b2d !important; color: #64748b; }
-        .holiday { background: #4c0505 !important; color: #fca5a5 !important; }
         
-        /* FIX SZÍNEZÉS JAVÍTVA */
+        /* ÜNNEPNAP STÍLUS */
+        .holiday { background: #4c0505 !important; color: #fca5a5 !important; border: 1px solid #7f1d1d !important; }
+        
+        /* MAI NAP JELÖLÉSE */
+        .today-cell { border: 2px solid #3b82f6 !important; background: rgba(59, 130, 246, 0.15) !important; position: relative; }
+        .today-cell::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: #3b82f6; }
+
         .cell-S { background: #059669 !important; color: white !important; }
         .cell-BA { background: #ea580c !important; color: white !important; }
         .cell-IG { background: #7c3aed !important; color: white !important; }
@@ -28,7 +33,6 @@
 
         .input-cell { width: 100%; height: 100%; border: none; text-align: center; background: transparent; color: white; font-weight: 800; outline: none; }
 
-        /* NYOMTATÁS JAVÍTVA - FEHÉR LAP, FEKETE SZÖVEG */
         @media print {
             .no-print { display: none !important; }
             body, html { background: white !important; color: black !important; }
@@ -36,13 +40,7 @@
             .print-page { width: 100%; padding: 10mm; background: white !important; color: black !important; }
             table { width: 100%; border-collapse: collapse; background: white !important; }
             th, td { border: 1px solid black !important; padding: 4px; font-size: 10pt; color: black !important; background: white !important; }
-            h1, h2, h3, p, span, div { color: black !important; }
             @page { size: A4 portrait; margin: 0; }
-        }
-
-        @media (max-width: 640px) {
-            .name-col { min-width: 130px; }
-            .matrix-table th, .matrix-table td { min-width: 32px; height: 32px; font-size: 10px; }
         }
     </style>
 </head>
@@ -93,7 +91,13 @@
         let currentDate = new Date(2026, 0, 1);
         const dayNames = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
         const monthNames = ["Január", "Február", "Március", "Április", "Május", "Június", "Július", "Augusztus", "Szeptember", "Október", "November", "December"];
-        const holidays2026 = ["2026-1-1", "2026-3-15", "2026-4-3", "2026-4-6", "2026-5-1", "2026-5-25", "2026-8-20", "2026-10-23", "2026-11-1", "2026-12-25", "2026-12-26"];
+        
+        // HIVATALOS MAGYAR ÜNNEPNAPOK 2026
+        const holidays2026 = [
+            "2026-1-1", "2026-3-15", "2026-4-3", "2026-4-5", "2026-4-6", 
+            "2026-5-1", "2026-5-24", "2026-5-25", "2026-8-20", "2026-10-23", 
+            "2026-11-1", "2026-12-25", "2026-12-26"
+        ];
 
         let employees = JSON.parse(localStorage.getItem('forvia_v2026_pro')) || [
             { id: 1, name: 'Példa János', yearlyQuota: 160, data: {} }
@@ -126,7 +130,6 @@
             const v = val.trim().toUpperCase();
             if(v === "") delete emp.data[key]; else emp.data[key] = v;
             
-            // Azonnali színezés frissítése a DOM-ban
             inputElement.parentElement.className = inputElement.parentElement.className.replace(/cell-\S+/g, "").trim();
             const newClass = getCellClass(v);
             if(newClass) inputElement.parentElement.classList.add(newClass);
@@ -145,13 +148,17 @@
         function render() {
             const year = 2026; const month = currentDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const realToday = new Date();
             document.getElementById('currentMonthDisplay').innerText = monthNames[month];
 
             let header = `<tr><th class="name-col text-[9px] uppercase font-black">Munkatárs</th><th class="w-12 text-blue-400 text-[8px] uppercase font-black">Keret</th><th class="w-12 text-emerald-400 text-[8px] uppercase font-black">Kiv.</th>`;
             for(let d=1; d<=daysInMonth; d++) {
                 const dateObj = new Date(year, month, d);
                 const isW = [0, 6].includes(dateObj.getDay());
-                header += `<th class="${isW ? 'weekend' : ''} ${holidays2026.includes(`${year}-${month+1}-${d}`) ? 'holiday' : ''}">${d}<span class="day-name">${dayNames[dateObj.getDay()]}</span></th>`;
+                const isH = holidays2026.includes(`${year}-${month+1}-${d}`);
+                const isToday = realToday.getFullYear() === year && realToday.getMonth() === month && realToday.getDate() === d;
+                
+                header += `<th class="${isW ? 'weekend' : ''} ${isH ? 'holiday' : ''} ${isToday ? 'today-cell' : ''}">${d}<span class="day-name">${dayNames[dateObj.getDay()]}</span></th>`;
             }
             document.getElementById('tableHeader').innerHTML = header + "</tr>";
 
@@ -165,8 +172,10 @@
                 for(let d=1; d<=daysInMonth; d++) {
                     const key = `${year}-${month+1}-${d}`; const v = emp.data[key] || "";
                     const isW = [0, 6].includes(new Date(year, month, d).getDay());
-                    const holidayClass = holidays2026.includes(`${year}-${month+1}-${d}`) ? 'holiday' : '';
-                    body += `<td class="${isW ? 'weekend' : ''} ${holidayClass} ${getCellClass(v)}"><input type="text" value="${v}" onblur="updateCell(${emp.id}, '${key}', this.value, this)" class="input-cell"></td>`;
+                    const isH = holidays2026.includes(`${year}-${month+1}-${d}`);
+                    const isToday = realToday.getFullYear() === year && realToday.getMonth() === month && realToday.getDate() === d;
+                    
+                    body += `<td class="${isW ? 'weekend' : ''} ${isH ? 'holiday' : ''} ${isToday ? 'today-cell' : ''} ${getCellClass(v)}"><input type="text" value="${v}" onblur="updateCell(${emp.id}, '${key}', this.value, this)" class="input-cell"></td>`;
                 }
                 body += `</tr>`;
             });
