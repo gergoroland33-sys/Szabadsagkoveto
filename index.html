@@ -3,77 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FORVIA | Staff Management 2026</title>
+    <title>FORVIA | Staff Pro 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; margin: 0; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; margin: 0; overflow-x: hidden; }
         
-        /* Mátrix stílusok */
-        .name-col { position: sticky; left: 0; background: #1e293b; z-index: 40; min-width: 240px; border-right: 3px solid #3b82f6 !important; }
-        .matrix-table th, .matrix-table td { border: 1px solid #2d3748; min-width: 42px; height: 45px; text-align: center; }
-        .day-name { font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 800; display: block; line-height: 1; margin-top: 2px; }
+        /* Laptop & Mobil görgetés */
+        .table-container { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+        
+        .name-col { position: sticky; left: 0; background: #1e293b; z-index: 40; min-width: 180px; border-right: 3px solid #3b82f6 !important; }
+        .matrix-table th, .matrix-table td { border: 1px solid #2d3748; min-width: 40px; height: 42px; text-align: center; }
+        .day-name { font-size: 8px; text-transform: uppercase; color: #64748b; font-weight: 800; display: block; }
         
         .weekend { background: #141b2d !important; color: #64748b; }
         .holiday { background: #4c0505 !important; color: #fca5a5 !important; }
         
-        /* Cella típusok */
-        .cell-S { background: #059669 !important; color: white; }
-        .cell-BA { background: #ea580c !important; color: white; }
-        .cell-IG { background: #7c3aed !important; color: white; }
-        .cell-TU { background: #2563eb !important; color: white; }
-        .cell-KE { background: #d97706 !important; color: white; }
+        .cell-S { background: #059669 !important; }
+        .cell-BA { background: #ea580c !important; }
+        .cell-IG { background: #7c3aed !important; }
+        .cell-TU { background: #2563eb !important; }
+        .cell-KE { background: #d97706 !important; }
 
         .input-cell { width: 100%; height: 100%; border: none; text-align: center; background: transparent; color: white; font-weight: 800; outline: none; font-size: 13px; }
 
         @media print {
-            .no-print { display: none !important; }
-            #print-area { display: block !important; color: black !important; background: white !important; font-size: 11pt; }
-            body { background: white; color: black; }
-            .print-page { width: 210mm; height: 290mm; padding: 15mm; margin: 0 auto; page-break-after: always; box-sizing: border-box; }
-            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-            th, td { border: 1px solid black !important; color: black !important; padding: 6px; text-align: center; }
-            .text-left { text-align: left !important; }
-            .h-line { border-bottom: 2px solid black; margin: 10px 0; }
+            header, main, .no-print { display: none !important; }
+            html, body { background: white !important; color: black !important; margin: 0 !important; padding: 0 !important; height: auto !important; }
+            #print-area { display: block !important; width: 100% !important; height: auto !important; position: static !important; }
+            .print-page { width: 100%; padding: 10mm; page-break-after: avoid; page-break-inside: avoid; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+            th, td { border: 1px solid black !important; padding: 4px; font-size: 10pt; word-wrap: break-word; }
+            @page { size: A4 portrait; margin: 0; }
+        }
+
+        /* Reszponzív fixek */
+        @media (max-width: 768px) {
+            .name-col { min-width: 140px; font-size: 12px; }
+            header { flex-direction: column; height: auto; padding: 15px; }
         }
     </style>
 </head>
 <body class="pb-10">
     <div id="print-area" class="hidden"></div>
 
-    <header class="bg-[#111827] border-b border-slate-800 p-4 sticky top-0 z-50 no-print">
-        <div class="max-w-full mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-6">
-                <div class="flex flex-col">
-                    <span class="text-blue-500 font-black text-2xl tracking-tighter leading-none">FORVIA</span>
-                    <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Attendance Management</span>
-                </div>
-                <nav class="flex bg-slate-900 p-1 rounded-lg">
-                    <button onclick="setView('matrix')" id="btn-matrix" class="px-5 py-2 rounded-md bg-blue-600 text-[11px] font-bold uppercase transition">Havi Mátrix</button>
-                    <button onclick="setView('stats')" id="btn-stats" class="px-5 py-2 rounded-md text-[11px] font-bold uppercase transition ml-1">Személyi Adatlapok</button>
-                </nav>
+    <header class="bg-[#111827] border-b border-slate-800 p-4 sticky top-0 z-50 no-print flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+            <div class="flex flex-col">
+                <span class="text-blue-500 font-black text-2xl tracking-tighter leading-none">FORVIA</span>
+                <span class="text-[9px] text-slate-500 uppercase font-black">Staff Pro 2026</span>
             </div>
+            <nav class="flex bg-slate-900 p-1 rounded-lg">
+                <button onclick="setView('matrix')" id="btn-matrix" class="px-4 py-2 rounded-md bg-blue-600 text-[10px] font-bold uppercase transition">Mátrix</button>
+                <button onclick="setView('stats')" id="btn-stats" class="px-4 py-2 rounded-md text-[10px] font-bold uppercase transition ml-1">Adatlapok</button>
+            </nav>
+        </div>
 
-            <div class="flex items-center gap-3 glass-card px-4 py-1.5">
-                <button onclick="changeMonth(-1)" class="text-slate-400 hover:text-white px-2"><i class="fas fa-chevron-left"></i></button>
-                <span id="currentMonthDisplay" class="font-black text-xs uppercase tracking-widest w-44 text-center text-blue-400">2026 Január</span>
-                <button onclick="changeMonth(1)" class="text-slate-400 hover:text-white px-2"><i class="fas fa-chevron-right"></i></button>
-            </div>
+        <div class="flex items-center gap-3 bg-slate-900/50 border border-slate-800 px-4 py-1.5 rounded-xl">
+            <button onclick="changeMonth(-1)" class="text-slate-400 hover:text-white px-2"><i class="fas fa-chevron-left"></i></button>
+            <span id="currentMonthDisplay" class="font-black text-xs uppercase tracking-widest w-32 text-center text-blue-400">2026 Január</span>
+            <button onclick="changeMonth(1)" class="text-slate-400 hover:text-white px-2"><i class="fas fa-chevron-right"></i></button>
+        </div>
 
-            <div class="flex gap-2">
-                <button onclick="addNewEmployee()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-xs font-black uppercase"><i class="fas fa-plus mr-2"></i>Új Dolgozó</button>
-                <button onclick="exportData()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs"><i class="fas fa-download"></i></button>
-            </div>
+        <div class="flex gap-2">
+            <button onclick="addNewEmployee()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-xs font-black uppercase"><i class="fas fa-plus"></i></button>
+            <button onclick="exportData()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs"><i class="fas fa-download"></i></button>
         </div>
     </header>
 
-    <main class="p-4 no-print">
+    <main class="p-2 md:p-6 no-print">
         <div id="view-matrix">
-            <div class="glass-card overflow-x-auto shadow-2xl">
+            <div class="table-container shadow-2xl bg-slate-900/50">
                 <table class="matrix-table w-full border-collapse">
-                    <thead id="tableHeader" class="bg-slate-800"></thead>
+                    <thead id="tableHeader" class="bg-slate-800 text-slate-400"></thead>
                     <tbody id="tableBody"></tbody>
                 </table>
             </div>
@@ -116,44 +119,36 @@
             const emp = employees.find(e => e.id === id);
             let sSum = 0; Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
             const remElement = document.getElementById(`rem-${id}`);
-            if(remElement) remElement.innerText = (emp.yearlyQuota - sSum) + " óra";
+            if(remElement) remElement.innerText = (emp.yearlyQuota - sSum);
         }
 
         function render() {
             const year = currentDate.getFullYear(); const month = currentDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            let header = `<tr><th class="name-col text-xs uppercase font-black text-slate-400">Munkatárs</th><th class="w-20 text-blue-400 text-[10px] uppercase font-black">Keret</th><th class="w-24 text-emerald-400 text-[10px] uppercase font-black">Kivehető óra</th>`;
+            document.getElementById('currentMonthDisplay').innerText = currentDate.toLocaleString('hu-HU', { month: 'long', year: 'numeric' });
+
+            let header = `<tr><th class="name-col text-[10px] uppercase font-black">Munkatárs</th><th class="w-16 text-blue-400 text-[9px] uppercase font-black">Keret</th><th class="w-16 text-emerald-400 text-[9px] uppercase font-black">Kivehető</th>`;
             for(let d=1; d<=daysInMonth; d++) {
                 const dateObj = new Date(year, month, d);
-                const dayName = dayNames[dateObj.getDay()];
                 const isW = [0, 6].includes(dateObj.getDay());
                 const isH = holidays2026.includes(`${year}-${month+1}-${d}`);
-                header += `<th class="${isH ? 'holiday' : (isW ? 'weekend' : '')} text-[11px] font-bold">${d}<span class="day-name">${dayName}</span></th>`;
+                header += `<th class="${isH ? 'holiday' : (isW ? 'weekend' : '')} text-[10px] font-bold">${d}<span class="day-name">${dayNames[dateObj.getDay()]}</span></th>`;
             }
             document.getElementById('tableHeader').innerHTML = header + "</tr>";
 
             let body = "";
             employees.forEach(emp => {
                 let sSum = 0; Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
-                body += `<tr>
-                    <td class="name-col flex justify-between items-center group px-4">
-                        <span class="font-bold text-sm tracking-tight">${emp.name}</span>
-                        <div class="flex gap-2">
-                            <button onclick="printA4(${emp.id})" class="text-slate-500 hover:text-white transition"><i class="fas fa-print"></i></button>
-                            <button onclick="removeEmp(${emp.id})" class="opacity-0 group-hover:opacity-100 text-red-500 transition"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    </td>
-                    <td><input type="number" value="${emp.yearlyQuota}" onblur="emp.yearlyQuota=parseInt(this.value)||0; save(); render();" class="input-cell text-blue-400"></td>
-                    <td id="rem-${emp.id}" class="text-emerald-500 font-black text-xs">${emp.yearlyQuota - sSum} óra</td>`;
-                
+                body += `<tr><td class="name-col flex justify-between items-center px-2"><span class="font-bold text-xs truncate">${emp.name}</span><button onclick="printA4(${emp.id})" class="text-slate-500 ml-1"><i class="fas fa-print text-[10px]"></i></button></td>
+                <td><input type="number" value="${emp.yearlyQuota}" onblur="emp.yearlyQuota=parseInt(this.value)||0; save(); render();" class="input-cell text-blue-400"></td>
+                <td id="rem-${emp.id}" class="text-emerald-500 font-black text-xs">${emp.yearlyQuota - sSum}</td>`;
                 for(let d=1; d<=daysInMonth; d++) {
                     const key = `${year}-${month+1}-${d}`; const v = emp.data[key] || "";
                     let c = "";
                     if (!isNaN(v) && v !== "") c = "cell-S"; else if(v === 'BÁ') c = "cell-BA"; else if(v === 'IG') c = "cell-IG"; else if(v === 'TU') c = "cell-TU"; else if(v.startsWith('KÉ')) c = "cell-KE";
                     const isW = [0, 6].includes(new Date(year, month, d).getDay());
                     const isH = holidays2026.includes(`${year}-${month+1}-${d}`);
-                    body += `<td class="${isH ? 'holiday' : (isW ? 'weekend' : '')} ${c}"><input type="text" value="${v}" onblur="updateCell(${emp.id}, '${key}', this.value)" class="input-cell" placeholder="."></td>`;
+                    body += `<td class="${isH ? 'holiday' : (isW ? 'weekend' : '')} ${c}"><input type="text" value="${v}" onblur="updateCell(${emp.id}, '${key}', this.value)" class="input-cell"></td>`;
                 }
                 body += `</tr>`;
             });
@@ -161,71 +156,66 @@
         }
 
         function renderStats() {
-            const year = currentDate.getFullYear();
+            const year = 2026;
             document.getElementById('view-stats').innerHTML = employees.map(emp => {
-                let sSum = 0; Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
-                return `
-                <div class="glass-card p-5 border-t-4 border-blue-500">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-xl font-black text-white">${emp.name}</h3>
-                        <button onclick="printA4(${emp.id})" class="bg-blue-600 hover:bg-blue-500 p-2 rounded text-xs px-4 font-bold uppercase tracking-widest transition"><i class="fas fa-print mr-2"></i>Nyomtatás</button>
+                let s = { S:0, BA:0, IG:0, TU:0, KE:0 };
+                Object.values(emp.data).forEach(v => { if(!isNaN(v)) s.S+=parseFloat(v); else if(v==='BÁ') s.BA++; else if(v==='IG') s.IG++; else if(v==='TU') s.TU++; else if(v.startsWith('KÉ')) s.KE++; });
+                return `<div class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition"><button onclick="removeEmp(${emp.id})" class="text-red-500"><i class="fas fa-trash"></i></button></div>
+                    <h3 class="text-xl font-black mb-1">${emp.name}</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <div class="bg-slate-900 p-2 rounded-lg"><p class="text-[9px] text-slate-500 uppercase font-bold">Kivehető</p><p class="text-lg font-black text-emerald-500">${emp.yearlyQuota - s.S} <span class="text-[10px]">óra</span></p></div>
+                        <div class="bg-slate-900 p-2 rounded-lg"><p class="text-[9px] text-slate-500 uppercase font-bold">Összes Szab.</p><p class="text-lg font-black text-white">${s.S} <span class="text-[10px]">óra</span></p></div>
                     </div>
-                    <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-800 flex justify-between items-center mb-4">
-                        <div><p class="text-slate-500 text-[10px] font-bold uppercase">Kivehető óra (2026)</p><p class="text-2xl font-black text-emerald-500">${emp.yearlyQuota - sSum} <span class="text-xs">óra</span></p></div>
-                        <div class="text-right"><p class="text-slate-500 text-[10px] font-bold uppercase text-blue-400">Összesített szabadság</p><p class="text-xl font-black text-slate-300">${sSum} óra</p></div>
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
+                        <div class="text-center"><span class="block text-orange-500 text-sm font-black">${s.BA}</span>BÁ</div>
+                        <div class="text-center"><span class="block text-violet-500 text-sm font-black">${s.IG}</span>IG</div>
+                        <div class="text-center"><span class="block text-blue-500 text-sm font-black">${s.TU}</span>TU</div>
+                        <div class="text-center"><span class="block text-amber-500 text-sm font-black">${s.KE}</span>KÉ</div>
                     </div>
+                    <button onclick="printA4(${emp.id})" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-black text-xs uppercase transition-all shadow-lg"><i class="fas fa-print mr-2"></i>Személyi Adatlap Nyomtatása</button>
                 </div>`;
             }).join('');
         }
 
         function printA4(empId) {
             const emp = employees.find(e => e.id === empId);
-            const year = currentDate.getFullYear();
-            let rows = ""; let totals = { S:0, BA:0, IG:0, TU:0, KE:0 };
-            
+            const year = 2026;
+            let rows = ""; let t = { S:0, BA:0, IG:0, TU:0, KE:0 };
             for(let m=1; m<=12; m++) {
                 let ms = { S:0, BA:0, IG:0, TU:0, KE:0 };
-                Object.keys(emp.data).forEach(k => { 
-                    if(k.startsWith(`${year}-${m}-`)) { 
-                        const v = emp.data[k]; 
-                        if(!isNaN(v)) ms.S += parseFloat(v); else if(v==='BÁ') ms.BA++; else if(v==='IG') ms.IG++; else if(v==='TU') ms.TU++; else if(v.startsWith('KÉ')) ms.KE++; 
-                    } 
-                });
-                rows += `<tr><td class="text-left font-bold">${monthNames[m-1]}</td><td>${ms.S}</td><td>${ms.BA}</td><td>${ms.IG}</td><td>${ms.TU}</td><td>${ms.KE}</td></tr>`;
-                Object.keys(totals).forEach(key => totals[key] += ms[key]);
+                Object.keys(emp.data).forEach(k => { if(k.startsWith(`${year}-${m}-`)) { 
+                    const v = emp.data[k]; if(!isNaN(v)) ms.S += parseFloat(v); else if(v==='BÁ') ms.BA++; else if(v==='IG') ms.IG++; else if(v==='TU') ms.TU++; else if(v.startsWith('KÉ')) ms.KE++;
+                }});
+                rows += `<tr><td>${monthNames[m-1]}</td><td>${ms.S}</td><td>${ms.BA}</td><td>${ms.IG}</td><td>${ms.TU}</td><td>${ms.KE}</td></tr>`;
+                Object.keys(t).forEach(k => t[k] += ms[k]);
             }
-
             document.getElementById('print-area').innerHTML = `<div class="print-page">
-                <div style="display:flex; justify-content:space-between; align-items:flex-end">
-                    <div><h1 style="margin:0; font-size:32px; letter-spacing:-2px">FORVIA</h1><p style="margin:0; font-weight:800; font-size:12px; color:#555">SZEMÉLYI JELENLÉTI ADATLAP - ${year}</p></div>
-                    <div style="text-align:right"><h2 style="margin:0; font-size:20px">${emp.name}</h2><p style="margin:0; font-size:12px">Munkavállalói azonosító: #${emp.id}</p></div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid black; padding-bottom:5px">
+                    <div><h1 style="margin:0; font-size:28px">FORVIA</h1><p style="margin:0; font-weight:bold; font-size:10px">ADATLAP - 2026</p></div>
+                    <div style="text-align:right"><h2 style="margin:0; font-size:18px">${emp.name}</h2></div>
                 </div>
-                <div class="h-line"></div>
-                <div style="display:flex; justify-content:space-between; margin:20px 0">
-                    <div style="background:#f0f0f0; padding:15px; border:1px solid #ddd; width:30%; text-align:center"><strong>ÉVES KERET</strong><br><span style="font-size:20px">${emp.yearlyQuota} ÓRA</span></div>
-                    <div style="background:#f0f0f0; padding:15px; border:1px solid #ddd; width:30%; text-align:center"><strong>KIVETT ÖSSZESEN</strong><br><span style="font-size:20px">${totals.S} ÓRA</span></div>
-                    <div style="background:#000; color:#fff; padding:15px; width:30%; text-align:center"><strong>KIVEHETŐ ÓRA</strong><br><span style="font-size:22px">${emp.yearlyQuota - totals.S} ÓRA</span></div>
+                <div style="display:flex; justify-content:space-around; margin:15px 0; background:#f0f0f0; border:1px solid #000; padding:10px">
+                    <div style="text-align:center"><strong>KERET:</strong> ${emp.yearlyQuota} óra</div>
+                    <div style="text-align:center"><strong>KIVETT:</strong> ${t.S} óra</div>
+                    <div style="text-align:center; font-weight:bold"><strong>KIVEHETŐ:</strong> ${emp.yearlyQuota - t.S} óra</div>
                 </div>
                 <table>
-                    <thead><tr style="background:#eee"><th>HÓNAP</th><th>SZABADSÁG (óra)</th><th>BETEGÁLL. (nap)</th><th>IGAZOLATLAN</th><th>TÚLÓRA</th><th>KÉSÉS</th></tr></thead>
+                    <thead><tr style="background:#ddd"><th>HÓNAP</th><th>SZAB. (óra)</th><th>BÁ (nap)</th><th>IG</th><th>TU</th><th>KÉ</th></tr></thead>
                     <tbody>${rows}</tbody>
-                    <tfoot style="background:#eee; font-weight:bold"><tr><td>ÖSSZESEN:</td><td>${totals.S} óra</td><td>${totals.BA} nap</td><td>${totals.IG} alk.</td><td>${totals.TU} alk.</td><td>${totals.KE} alk.</td></tr></tfoot>
+                    <tr style="background:#eee; font-weight:bold"><td>ÖSSZESEN</td><td>${t.S}</td><td>${t.BA}</td><td>${t.IG}</td><td>${t.TU}</td><td>${t.KE}</td></tr>
                 </table>
-                <div style="margin-top:40px; border:1px solid #eee; padding:15px; font-size:10px; color:#666">
-                    <strong>Megjegyzés:</strong> Ez a dokumentum a Forvia belső nyilvántartása alapján készült. A feltüntetett adatok tájékoztató jellegűek.
-                </div>
-                <div style="margin-top:60px; display:flex; justify-content:space-between">
-                    <div style="width:200px; border-top:1px solid black; text-align:center; padding-top:5px">Munkavállaló aláírása</div>
-                    <div style="width:200px; border-top:1px solid black; text-align:center; padding-top:5px">Munkáltatói igazolás</div>
+                <div style="margin-top:40px; display:flex; justify-content:space-between">
+                    <div style="width:200px; border-top:1px solid black; text-align:center; font-size:10px">Munkavállaló</div>
+                    <div style="width:200px; border-top:1px solid black; text-align:center; font-size:10px">Munkáltató</div>
                 </div>
             </div>`;
             window.print();
         }
 
-        function addNewEmployee() { const n = prompt("Új dolgozó neve:"); if(n) { const q = prompt("Éves alapkeret (óra):", "160"); employees.push({id:Date.now(), name:n, yearlyQuota:parseInt(q)||0, data:{}}); save(); render(); } }
-        function removeEmp(id) { if(confirm("Törlöd a dolgozót az adatbázisból?")) { employees = employees.filter(e => e.id !== id); save(); render(); } }
-        function exportData() { const blob = new Blob([JSON.stringify(employees)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `forvia_export_2026.json`; a.click(); }
-
+        function addNewEmployee() { const n = prompt("Név:"); if(n) { const q = prompt("Keret óra:", "160"); employees.push({id:Date.now(), name:n, yearlyQuota:parseInt(q)||0, data:{}}); save(); render(); } }
+        function removeEmp(id) { if(confirm("Törlöd?")) { employees = employees.filter(e => e.id !== id); save(); render(); } }
+        function exportData() { const blob = new Blob([JSON.stringify(employees)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'forvia_2026.json'; a.click(); }
         window.onload = render;
     </script>
 </body>
