@@ -2,79 +2,87 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FORVIA | Staff Pro 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; margin: 0; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #e2e8f0; margin: 0; }
         
-        /* Laptop & Mobil görgetés */
-        .table-container { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+        /* Reszponzív Konténer */
+        .table-container { overflow-x: auto; border-radius: 8px; background: #111827; }
         
-        .name-col { position: sticky; left: 0; background: #1e293b; z-index: 40; min-width: 180px; border-right: 3px solid #3b82f6 !important; }
-        .matrix-table th, .matrix-table td { border: 1px solid #2d3748; min-width: 40px; height: 42px; text-align: center; }
-        .day-name { font-size: 8px; text-transform: uppercase; color: #64748b; font-weight: 800; display: block; }
+        /* Fix oszlop laptopon, mobilról levéve a jobb görgethetőségért */
+        .name-col { position: sticky; left: 0; background: #1e293b; z-index: 40; min-width: 160px; border-right: 2px solid #3b82f6 !important; padding: 0 8px !important; }
+        
+        .matrix-table th, .matrix-table td { border: 1px solid #2d3748; min-width: 38px; height: 38px; text-align: center; font-size: 12px; }
+        .day-name { font-size: 7px; text-transform: uppercase; color: #64748b; font-weight: 800; display: block; line-height: 1; }
         
         .weekend { background: #141b2d !important; color: #64748b; }
         .holiday { background: #4c0505 !important; color: #fca5a5 !important; }
         
+        /* Színkódok */
         .cell-S { background: #059669 !important; }
         .cell-BA { background: #ea580c !important; }
         .cell-IG { background: #7c3aed !important; }
         .cell-TU { background: #2563eb !important; }
         .cell-KE { background: #d97706 !important; }
 
-        .input-cell { width: 100%; height: 100%; border: none; text-align: center; background: transparent; color: white; font-weight: 800; outline: none; font-size: 13px; }
+        .input-cell { width: 100%; height: 100%; border: none; text-align: center; background: transparent; color: white; font-weight: 800; outline: none; }
 
         @media print {
-            header, main, .no-print { display: none !important; }
-            html, body { background: white !important; color: black !important; margin: 0 !important; padding: 0 !important; height: auto !important; }
-            #print-area { display: block !important; width: 100% !important; height: auto !important; position: static !important; }
-            .print-page { width: 100%; padding: 10mm; page-break-after: avoid; page-break-inside: avoid; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-            th, td { border: 1px solid black !important; padding: 4px; font-size: 10pt; word-wrap: break-word; }
+            .no-print { display: none !important; }
+            #print-area { display: block !important; color: black !important; }
+            .print-page { width: 100%; padding: 10mm; page-break-after: avoid; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid black !important; padding: 4px; font-size: 9pt; }
             @page { size: A4 portrait; margin: 0; }
         }
 
-        /* Reszponzív fixek */
-        @media (max-width: 768px) {
-            .name-col { min-width: 140px; font-size: 12px; }
-            header { flex-direction: column; height: auto; padding: 15px; }
+        /* Mobil specifikus igazítások */
+        @media (max-width: 640px) {
+            .header-content { flex-direction: column; gap: 10px; }
+            .name-col { min-width: 130px; }
+            .matrix-table th, .matrix-table td { min-width: 32px; height: 32px; font-size: 10px; }
+            .btn-text { display: none; } /* Mobilról eltüntetjük a hosszú szöveget ha kell, de kérted a feliratot */
         }
     </style>
 </head>
 <body class="pb-10">
     <div id="print-area" class="hidden"></div>
 
-    <header class="bg-[#111827] border-b border-slate-800 p-4 sticky top-0 z-50 no-print flex flex-wrap justify-between items-center gap-4">
-        <div class="flex items-center gap-4">
-            <div class="flex flex-col">
-                <span class="text-blue-500 font-black text-2xl tracking-tighter leading-none">FORVIA</span>
-                <span class="text-[9px] text-slate-500 uppercase font-black">Staff Pro 2026</span>
+    <header class="bg-[#111827] border-b border-slate-800 p-3 sticky top-0 z-50 no-print">
+        <div class="max-w-full mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="flex flex-col">
+                    <span class="text-blue-500 font-black text-xl tracking-tighter leading-none">FORVIA</span>
+                    <span class="text-[8px] text-slate-500 uppercase font-bold">Staff Pro 2026</span>
+                </div>
+                <nav class="flex bg-slate-900 p-1 rounded-lg">
+                    <button onclick="setView('matrix')" id="btn-matrix" class="px-3 py-1.5 rounded-md bg-blue-600 text-[10px] font-bold uppercase transition">Mátrix</button>
+                    <button onclick="setView('stats')" id="btn-stats" class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition ml-1">Adatlapok</button>
+                </nav>
             </div>
-            <nav class="flex bg-slate-900 p-1 rounded-lg">
-                <button onclick="setView('matrix')" id="btn-matrix" class="px-4 py-2 rounded-md bg-blue-600 text-[10px] font-bold uppercase transition">Mátrix</button>
-                <button onclick="setView('stats')" id="btn-stats" class="px-4 py-2 rounded-md text-[10px] font-bold uppercase transition ml-1">Adatlapok</button>
-            </nav>
-        </div>
 
-        <div class="flex items-center gap-3 bg-slate-900/50 border border-slate-800 px-4 py-1.5 rounded-xl">
-            <button onclick="changeMonth(-1)" class="text-slate-400 hover:text-white px-2"><i class="fas fa-chevron-left"></i></button>
-            <span id="currentMonthDisplay" class="font-black text-xs uppercase tracking-widest w-32 text-center text-blue-400">2026 Január</span>
-            <button onclick="changeMonth(1)" class="text-slate-400 hover:text-white px-2"><i class="fas fa-chevron-right"></i></button>
-        </div>
+            <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-700 px-3 py-1 rounded-lg">
+                <button onclick="changeMonth(-1)" class="text-slate-400"><i class="fas fa-chevron-left text-xs"></i></button>
+                <span id="currentMonthDisplay" class="font-black text-[10px] uppercase tracking-tighter w-24 text-center text-blue-400">Január</span>
+                <button onclick="changeMonth(1)" class="text-slate-400"><i class="fas fa-chevron-right text-xs"></i></button>
+            </div>
 
-        <div class="flex gap-2">
-            <button onclick="addNewEmployee()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-xs font-black uppercase"><i class="fas fa-plus"></i></button>
-            <button onclick="exportData()" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs"><i class="fas fa-download"></i></button>
+            <div class="flex gap-2">
+                <button onclick="addNewEmployee()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded text-[10px] font-black uppercase flex items-center gap-2">
+                    <i class="fas fa-plus"></i> <span>Új dolgozó</span>
+                </button>
+                <button onclick="exportData()" class="bg-slate-700 px-3 py-1.5 rounded text-[10px]"><i class="fas fa-file-export"></i></button>
+            </div>
         </div>
     </header>
 
-    <main class="p-2 md:p-6 no-print">
+    <main class="p-2 no-print">
         <div id="view-matrix">
-            <div class="table-container shadow-2xl bg-slate-900/50">
+            <div class="table-container shadow-2xl">
                 <table class="matrix-table w-full border-collapse">
                     <thead id="tableHeader" class="bg-slate-800 text-slate-400"></thead>
                     <tbody id="tableBody"></tbody>
@@ -82,7 +90,7 @@
             </div>
         </div>
 
-        <div id="view-stats" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="view-stats" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
     </main>
 
     <script>
@@ -123,32 +131,31 @@
         }
 
         function render() {
-            const year = currentDate.getFullYear(); const month = currentDate.getMonth();
+            const year = 2026; const month = currentDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            document.getElementById('currentMonthDisplay').innerText = currentDate.toLocaleString('hu-HU', { month: 'long', year: 'numeric' });
+            document.getElementById('currentMonthDisplay').innerText = monthNames[month];
 
-            let header = `<tr><th class="name-col text-[10px] uppercase font-black">Munkatárs</th><th class="w-16 text-blue-400 text-[9px] uppercase font-black">Keret</th><th class="w-16 text-emerald-400 text-[9px] uppercase font-black">Kivehető</th>`;
+            let header = `<tr><th class="name-col text-[9px] uppercase font-black">Munkatárs</th><th class="w-12 text-blue-400 text-[8px] uppercase font-black">Keret</th><th class="w-12 text-emerald-400 text-[8px] uppercase font-black">Kiv.</th>`;
             for(let d=1; d<=daysInMonth; d++) {
                 const dateObj = new Date(year, month, d);
                 const isW = [0, 6].includes(dateObj.getDay());
-                const isH = holidays2026.includes(`${year}-${month+1}-${d}`);
-                header += `<th class="${isH ? 'holiday' : (isW ? 'weekend' : '')} text-[10px] font-bold">${d}<span class="day-name">${dayNames[dateObj.getDay()]}</span></th>`;
+                header += `<th class="${isW ? 'weekend' : ''} ${holidays2026.includes(`${year}-${month+1}-${d}`) ? 'holiday' : ''}">${d}<span class="day-name">${dayNames[dateObj.getDay()]}</span></th>`;
             }
             document.getElementById('tableHeader').innerHTML = header + "</tr>";
 
             let body = "";
             employees.forEach(emp => {
                 let sSum = 0; Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
-                body += `<tr><td class="name-col flex justify-between items-center px-2"><span class="font-bold text-xs truncate">${emp.name}</span><button onclick="printA4(${emp.id})" class="text-slate-500 ml-1"><i class="fas fa-print text-[10px]"></i></button></td>
-                <td><input type="number" value="${emp.yearlyQuota}" onblur="emp.yearlyQuota=parseInt(this.value)||0; save(); render();" class="input-cell text-blue-400"></td>
-                <td id="rem-${emp.id}" class="text-emerald-500 font-black text-xs">${emp.yearlyQuota - sSum}</td>`;
+                body += `<tr><td class="name-col flex justify-between items-center"><span class="font-bold text-[11px] truncate">${emp.name}</span>
+                <div class="flex gap-1"><button onclick="printA4(${emp.id})" class="text-slate-500"><i class="fas fa-print text-[10px]"></i></button><button onclick="removeEmp(${emp.id})" class="text-red-900/50 hover:text-red-500"><i class="fas fa-trash text-[10px]"></i></button></div></td>
+                <td><input type="number" value="${emp.yearlyQuota}" onblur="emp.yearlyQuota=parseInt(this.value)||0; save(); render();" class="input-cell text-blue-400 text-[11px]"></td>
+                <td id="rem-${emp.id}" class="text-emerald-500 font-black text-[11px]">${emp.yearlyQuota - sSum}</td>`;
                 for(let d=1; d<=daysInMonth; d++) {
                     const key = `${year}-${month+1}-${d}`; const v = emp.data[key] || "";
                     let c = "";
                     if (!isNaN(v) && v !== "") c = "cell-S"; else if(v === 'BÁ') c = "cell-BA"; else if(v === 'IG') c = "cell-IG"; else if(v === 'TU') c = "cell-TU"; else if(v.startsWith('KÉ')) c = "cell-KE";
                     const isW = [0, 6].includes(new Date(year, month, d).getDay());
-                    const isH = holidays2026.includes(`${year}-${month+1}-${d}`);
-                    body += `<td class="${isH ? 'holiday' : (isW ? 'weekend' : '')} ${c}"><input type="text" value="${v}" onblur="updateCell(${emp.id}, '${key}', this.value)" class="input-cell"></td>`;
+                    body += `<td class="${isW ? 'weekend' : ''} ${c}"><input type="text" value="${v}" onblur="updateCell(${emp.id}, '${key}', this.value)" class="input-cell"></td>`;
                 }
                 body += `</tr>`;
             });
@@ -156,24 +163,23 @@
         }
 
         function renderStats() {
-            const year = 2026;
             document.getElementById('view-stats').innerHTML = employees.map(emp => {
                 let s = { S:0, BA:0, IG:0, TU:0, KE:0 };
                 Object.values(emp.data).forEach(v => { if(!isNaN(v)) s.S+=parseFloat(v); else if(v==='BÁ') s.BA++; else if(v==='IG') s.IG++; else if(v==='TU') s.TU++; else if(v.startsWith('KÉ')) s.KE++; });
-                return `<div class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition"><button onclick="removeEmp(${emp.id})" class="text-red-500"><i class="fas fa-trash"></i></button></div>
-                    <h3 class="text-xl font-black mb-1">${emp.name}</h3>
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        <div class="bg-slate-900 p-2 rounded-lg"><p class="text-[9px] text-slate-500 uppercase font-bold">Kivehető</p><p class="text-lg font-black text-emerald-500">${emp.yearlyQuota - s.S} <span class="text-[10px]">óra</span></p></div>
-                        <div class="bg-slate-900 p-2 rounded-lg"><p class="text-[9px] text-slate-500 uppercase font-bold">Összes Szab.</p><p class="text-lg font-black text-white">${s.S} <span class="text-[10px]">óra</span></p></div>
+                return `<div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700 relative">
+                    <button onclick="removeEmp(${emp.id})" class="absolute top-2 right-2 text-red-900/50 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+                    <h3 class="text-sm font-black mb-2 truncate pr-6">${emp.name}</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div class="bg-slate-900 p-2 rounded-lg text-center"><p class="text-[8px] text-slate-500 uppercase">Kivehető</p><p class="text-sm font-black text-emerald-500">${emp.yearlyQuota - s.S}</p></div>
+                        <div class="bg-slate-900 p-2 rounded-lg text-center"><p class="text-[8px] text-slate-500 uppercase">Szabadság</p><p class="text-sm font-black text-white">${s.S}</p></div>
                     </div>
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50">
-                        <div class="text-center"><span class="block text-orange-500 text-sm font-black">${s.BA}</span>BÁ</div>
-                        <div class="text-center"><span class="block text-violet-500 text-sm font-black">${s.IG}</span>IG</div>
-                        <div class="text-center"><span class="block text-blue-500 text-sm font-black">${s.TU}</span>TU</div>
-                        <div class="text-center"><span class="block text-amber-500 text-sm font-black">${s.KE}</span>KÉ</div>
+                    <div class="flex justify-between text-[9px] font-bold text-slate-400 bg-slate-900/50 p-2 rounded-lg">
+                        <div class="text-center"><span class="block text-orange-500 font-black">${s.BA}</span>BÁ</div>
+                        <div class="text-center"><span class="block text-violet-500 font-black">${s.IG}</span>IG</div>
+                        <div class="text-center"><span class="block text-blue-500 font-black">${s.TU}</span>TU</div>
+                        <div class="text-center"><span class="block text-amber-500 font-black">${s.KE}</span>KÉ</div>
                     </div>
-                    <button onclick="printA4(${emp.id})" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-black text-xs uppercase transition-all shadow-lg"><i class="fas fa-print mr-2"></i>Személyi Adatlap Nyomtatása</button>
+                    <button onclick="printA4(${emp.id})" class="w-full mt-3 bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white py-2 rounded-lg font-bold text-[10px] uppercase transition-all">Nyomtatás</button>
                 </div>`;
             }).join('');
         }
@@ -192,30 +198,30 @@
             }
             document.getElementById('print-area').innerHTML = `<div class="print-page">
                 <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid black; padding-bottom:5px">
-                    <div><h1 style="margin:0; font-size:28px">FORVIA</h1><p style="margin:0; font-weight:bold; font-size:10px">ADATLAP - 2026</p></div>
-                    <div style="text-align:right"><h2 style="margin:0; font-size:18px">${emp.name}</h2></div>
+                    <div><h1 style="margin:0; font-size:24px">FORVIA</h1><p style="margin:0; font-weight:bold; font-size:10px">SZEMÉLYI JELENLÉTI ADATLAP - 2026</p></div>
+                    <div style="text-align:right"><h2 style="margin:0; font-size:16px">${emp.name}</h2></div>
                 </div>
-                <div style="display:flex; justify-content:space-around; margin:15px 0; background:#f0f0f0; border:1px solid #000; padding:10px">
-                    <div style="text-align:center"><strong>KERET:</strong> ${emp.yearlyQuota} óra</div>
-                    <div style="text-align:center"><strong>KIVETT:</strong> ${t.S} óra</div>
-                    <div style="text-align:center; font-weight:bold"><strong>KIVEHETŐ:</strong> ${emp.yearlyQuota - t.S} óra</div>
+                <div style="display:flex; justify-content:space-around; margin:15px 0; background:#f0f0f0; border:1px solid #000; padding:10px; font-size:12px">
+                    <div><strong>KERET:</strong> ${emp.yearlyQuota} óra</div>
+                    <div><strong>KIVETT:</strong> ${t.S} óra</div>
+                    <div><strong>KIVEHETŐ:</strong> ${emp.yearlyQuota - t.S} óra</div>
                 </div>
-                <table>
+                <table style="width:100%; border-collapse:collapse; text-align:center; font-size:11px">
                     <thead><tr style="background:#ddd"><th>HÓNAP</th><th>SZAB. (óra)</th><th>BÁ (nap)</th><th>IG</th><th>TU</th><th>KÉ</th></tr></thead>
                     <tbody>${rows}</tbody>
                     <tr style="background:#eee; font-weight:bold"><td>ÖSSZESEN</td><td>${t.S}</td><td>${t.BA}</td><td>${t.IG}</td><td>${t.TU}</td><td>${t.KE}</td></tr>
                 </table>
-                <div style="margin-top:40px; display:flex; justify-content:space-between">
-                    <div style="width:200px; border-top:1px solid black; text-align:center; font-size:10px">Munkavállaló</div>
-                    <div style="width:200px; border-top:1px solid black; text-align:center; font-size:10px">Munkáltató</div>
+                <div style="margin-top:50px; display:flex; justify-content:space-between">
+                    <div style="width:180px; border-top:1px solid black; text-align:center; font-size:9px">Dolgozó aláírása</div>
+                    <div style="width:180px; border-top:1px solid black; text-align:center; font-size:9px">Munkáltatói igazolás</div>
                 </div>
             </div>`;
             window.print();
         }
 
-        function addNewEmployee() { const n = prompt("Név:"); if(n) { const q = prompt("Keret óra:", "160"); employees.push({id:Date.now(), name:n, yearlyQuota:parseInt(q)||0, data:{}}); save(); render(); } }
-        function removeEmp(id) { if(confirm("Törlöd?")) { employees = employees.filter(e => e.id !== id); save(); render(); } }
-        function exportData() { const blob = new Blob([JSON.stringify(employees)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'forvia_2026.json'; a.click(); }
+        function addNewEmployee() { const n = prompt("Dolgozó neve:"); if(n) { const q = prompt("Éves keret (óra):", "160"); employees.push({id:Date.now(), name:n, yearlyQuota:parseInt(q)||0, data:{}}); save(); render(); } }
+        function removeEmp(id) { if(confirm("FIGYELEM! Biztosan törlöd a dolgozót és minden adatát?")) { employees = employees.filter(e => e.id !== id); save(); render(); if(document.getElementById('view-stats').className === "") renderStats(); } }
+        function exportData() { const blob = new Blob([JSON.stringify(employees)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'forvia_2026_backup.json'; a.click(); }
         window.onload = render;
     </script>
 </body>
