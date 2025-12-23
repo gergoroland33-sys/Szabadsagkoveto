@@ -74,7 +74,13 @@
     </main>
 
     <script>
-        let currentDate = new Date(2026, 0, 1);
+        // MAI DÁTUM ALAPJÁN INDUL A NAPTÁR
+        let currentDate = new Date();
+        // Ha nem 2026-ban vagyunk, akkor 2026 januárjára állunk, egyébként a mai nap hónapjára
+        if(currentDate.getFullYear() !== 2026) {
+            currentDate = new Date(2026, 0, 1);
+        }
+
         const dayNames = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
         const monthNames = ["Január", "Február", "Március", "Április", "Május", "Június", "Július", "Augusztus", "Szeptember", "Október", "November", "December"];
         const holidays2026 = ["2026-1-1", "2026-3-15", "2026-4-3", "2026-4-5", "2026-4-6", "2026-5-1", "2026-5-24", "2026-5-25", "2026-8-20", "2026-10-23", "2026-11-1", "2026-12-25", "2026-12-26"];
@@ -228,7 +234,7 @@
         function addNewEmployee() { 
             const n = prompt("Dolgozó neve:"); 
             if(n) { 
-                const q = prompt("Éves keret (óra):", ""); // ÜRES KERET MEZŐ
+                const q = prompt("Éves keret (óra):", "");
                 employees.push({id:Date.now(), name:n, yearlyQuota:parseInt(q)||0, data:{}}); 
                 save(); render(); 
             } 
