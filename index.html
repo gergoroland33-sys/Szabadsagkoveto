@@ -82,23 +82,18 @@
     </main>
 
     <script>
-        // --- FELHŐ BEÁLLÍTÁSOK ---
         const DB_URL = "https://forviastaff-default-rtdb.firebaseio.com/employees.json";
 
-        let currentDate = new Date();
-        if(currentDate.getFullYear() !== 2026) {
-            currentDate = new Date(2026, 0, 1);
-        }
-
+        let currentDate = new Date(2026, 0, 1);
         const dayNames = ['V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'];
         const monthNames = ["Január", "Február", "Március", "Április", "Május", "Június", "Július", "Augusztus", "Szeptember", "Október", "November", "December"];
         const holidays2026 = ["2026-1-1", "2026-3-15", "2026-4-3", "2026-4-5", "2026-4-6", "2026-5-1", "2026-5-24", "2026-5-25", "2026-8-20", "2026-10-23", "2026-11-1", "2026-12-25", "2026-12-26"];
 
-        let employees = JSON.parse(localStorage.getItem('forvia_v2026_pro')) || [{ id: 1, name: 'Példa János', yearlyQuota: 160, data: {} }];
+        let employees = JSON.parse(localStorage.getItem('forvia_v2026_pro')) || [{ id: Date.now(), name: 'Példa János', yearlyQuota: 160, data: {} }];
 
-        // Szinkronizáció jelző állítása
         function setSyncStatus(status) {
             const el = document.getElementById('sync-indicator');
+            if(!el) return;
             if(status === 'saving') {
                 el.className = "text-amber-500 flex items-center gap-1";
                 el.innerHTML = '<i class="fas fa-sync fa-spin"></i> <span>Mentés...</span>';
@@ -111,7 +106,6 @@
             }
         }
 
-        // MENTÉS (LocalStorage + Felhő)
         async function save() {
             localStorage.setItem('forvia_v2026_pro', JSON.stringify(employees));
             setSyncStatus('saving');
@@ -128,7 +122,6 @@
             }
         }
 
-        // BETÖLTÉS A FELHŐBŐL
         async function loadFromCloud() {
             try {
                 const response = await fetch(DB_URL);
@@ -136,7 +129,10 @@
                 if (data && Array.isArray(data)) {
                     employees = data;
                     render();
-                    if(document.getElementById('view-stats').className === "") renderStats();
+                    setSyncStatus('ok');
+                } else {
+                    console.log("A felhő még üres vagy nem lista.");
+                    setSyncStatus('ok');
                 }
             } catch (e) {
                 console.error("Felhő betöltési hiba:", e);
@@ -170,28 +166,35 @@
         function getCellClass(v) {
             if (!v) return "";
             if (!isNaN(v)) return "cell-S";
-            if (v === 'BÁ') return "cell-BA";
-            if (v === 'IG') return "cell-IG";
-            if (v === 'TU') return "cell-TU";
-            if (v.startsWith('KÉ')) return "cell-KE";
+            const val = String(v).toUpperCase();
+            if (val === 'BÁ') return "cell-BA";
+            if (val === 'IG') return "cell-IG";
+            if (val === 'TU') return "cell-TU";
+            if (val.startsWith('KÉ')) return "cell-KE";
             return "";
         }
 
         function updateCell(id, key, val, inputElement) {
             const emp = employees.find(e => e.id === id);
+            if(!emp) return;
             const v = val.trim().toUpperCase();
             if(v === "") delete emp.data[key]; else emp.data[key] = v;
+            
             inputElement.parentElement.className = inputElement.parentElement.className.replace(/cell-\S+/g, "").trim();
             const newClass = getCellClass(v);
             if(newClass) inputElement.parentElement.classList.add(newClass);
+            
             save();
             updateRowTotals(id);
         }
 
         function updateRowTotals(id) {
             const emp = employees.find(e => e.id === id);
+            if(!emp) return;
             let sSum = 0; 
-            Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
+            if(emp.data) {
+                Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
+            }
             const remDisplay = document.getElementById(`rem-${id}`);
             if(remDisplay) remDisplay.innerText = (emp.yearlyQuota - sSum);
         }
@@ -212,13 +215,17 @@
 
             let body = "";
             employees.forEach(emp => {
-                let sSum = 0; Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
+                let sSum = 0; 
+                if(emp.data) {
+                    Object.values(emp.data).forEach(v => { if(!isNaN(v) && v !== "") sSum += parseFloat(v); });
+                }
                 body += `<tr><td class="name-col flex justify-between items-center"><span class="font-bold text-[11px] truncate">${emp.name}</span>
                 <div class="flex gap-1"><button onclick="printA4(${emp.id})" class="text-slate-500"><i class="fas fa-print text-[10px]"></i></button><button onclick="removeEmp(${emp.id})" class="text-red-900/50 hover:text-red-500"><i class="fas fa-trash text-[10px]"></i></button></div></td>
                 <td><input type="number" value="${emp.yearlyQuota}" oninput="const e=employees.find(x=>x.id===${emp.id}); e.yearlyQuota=parseInt(this.value)||0; updateRowTotals(${emp.id}); save();" class="input-cell text-blue-400 text-[11px]"></td>
                 <td id="rem-${emp.id}" class="text-emerald-500 font-black text-[11px]">${emp.yearlyQuota - sSum}</td>`;
                 for(let d=1; d<=daysInMonth; d++) {
-                    const key = `${year}-${month+1}-${d}`; const v = emp.data[key] || "";
+                    const key = `${year}-${month+1}-${d}`; 
+                    const v = (emp.data && emp.data[key]) ? emp.data[key] : "";
                     const isW = [0, 6].includes(new Date(year, month, d).getDay());
                     const isToday = realToday.getFullYear() === year && realToday.getMonth() === month && realToday.getDate() === d;
                     const colIdx = d + 2;
@@ -234,7 +241,15 @@
         function renderStats() {
             document.getElementById('view-stats').innerHTML = employees.map(emp => {
                 let s = { S:0, BA:0, IG:0, TU:0, KE:0 };
-                Object.values(emp.data).forEach(v => { if(!isNaN(v)) s.S+=parseFloat(v); else if(v==='BÁ') s.BA++; else if(v==='IG') s.IG++; else if(v==='TU') s.TU++; else if(v.startsWith('KÉ')) s.KE++; });
+                if(emp.data) {
+                    Object.values(emp.data).forEach(v => { 
+                        if(!isNaN(v)) s.S+=parseFloat(v); 
+                        else if(v==='BÁ') s.BA++; 
+                        else if(v==='IG') s.IG++; 
+                        else if(v==='TU') s.TU++; 
+                        else if(String(v).startsWith('KÉ')) s.KE++; 
+                    });
+                }
                 return `<div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700 relative">
                     <button onclick="removeEmp(${emp.id})" class="absolute top-2 right-2 text-red-900/50 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
                     <h3 class="text-sm font-black mb-2 truncate pr-6">${emp.name}</h3>
@@ -259,9 +274,14 @@
             let rows = ""; let t = { S:0, BA:0, IG:0, TU:0, KE:0 };
             for(let m=1; m<=12; m++) {
                 let ms = { S:0, BA:0, IG:0, TU:0, KE:0 };
-                Object.keys(emp.data).forEach(k => { if(k.startsWith(`${year}-${m}-`)) { 
-                    const v = emp.data[k]; if(!isNaN(v)) ms.S += parseFloat(v); else if(v==='BÁ') ms.BA++; else if(v==='IG') ms.IG++; else if(v==='TU') ms.TU++; else if(v.startsWith('KÉ')) ms.KE++;
-                }});
+                if(emp.data) {
+                    Object.keys(emp.data).forEach(k => { 
+                        if(k.startsWith(`${year}-${m}-`)) { 
+                            const v = emp.data[k]; 
+                            if(!isNaN(v)) ms.S += parseFloat(v); else if(v==='BÁ') ms.BA++; else if(v==='IG') ms.IG++; else if(v==='TU') ms.TU++; else if(String(v).startsWith('KÉ')) ms.KE++;
+                        }
+                    });
+                }
                 rows += `<tr><td>${monthNames[m-1]}</td><td>${ms.S}</td><td>${ms.BA}</td><td>${ms.IG}</td><td>${ms.TU}</td><td>${ms.KE}</td></tr>`;
                 Object.keys(t).forEach(k => t[k] += ms[k]);
             }
@@ -290,7 +310,7 @@
         function addNewEmployee() { 
             const n = prompt("Dolgozó neve:"); 
             if(n) { 
-                const q = prompt("Éves keret (óra):", "");
+                const q = prompt("Éves keret (óra):", "160");
                 employees.push({id:Date.now(), name:n, yearlyQuota:parseInt(q)||0, data:{}}); 
                 save(); render(); 
             } 
