@@ -18,13 +18,11 @@
         .today-cell { border: 2px solid #3b82f6 !important; background: rgba(59, 130, 246, 0.15) !important; }
         .col-highlight { background: rgba(59, 130, 246, 0.2) !important; transition: all 0.2s ease; }
         .head-highlight { background: #3b82f6 !important; color: white !important; transform: scale(1.1); z-index: 50; transition: all 0.2s ease; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
-        
         .cell-S { background: #059669 !important; color: white !important; }
         .cell-BA { background: #ea580c !important; color: white !important; }
         .cell-IG { background: #7c3aed !important; color: white !important; }
         .cell-TU { background: #2563eb !important; color: white !important; }
         .cell-KE { background: #d97706 !important; color: white !important; }
-        
         .input-cell { width: 100%; height: 100%; border: none; text-align: center; background: transparent; color: white; font-weight: 800; outline: none; }
         .shift-btn { transition: all 0.2s; border: 1px solid #334155; }
         .shift-btn.active { color: white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
@@ -32,6 +30,11 @@
         .shift-B.active { background-color: #10b981; border-color: #34d399; }
         .shift-C.active { background-color: #f59e0b; border-color: #fbbf24; }
         .shift-D.active { background-color: #8b5cf6; border-color: #a78bfa; }
+        
+        /* Lebegő frissítés gomb */
+        .refresh-fab { position: fixed; bottom: 20px; right: 20px; width: 45px; height: 45px; background: #3b82f6; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); cursor: pointer; z-index: 100; transition: all 0.3s ease; border: 2px solid rgba(255, 255, 255, 0.1); }
+        .refresh-fab:hover { background: #2563eb; transform: scale(1.1) rotate(180deg); }
+        .refresh-fab:active { transform: scale(0.9); }
 
         @media print {
             .no-print { display: none !important; }
@@ -45,6 +48,11 @@
 </head>
 <body class="pb-10">
     <div id="print-area" class="hidden"></div>
+    
+    <div class="refresh-fab no-print" onclick="loadFromCloud()" title="Frissítés a felhőből">
+        <i class="fas fa-sync-alt"></i>
+    </div>
+
     <header class="bg-[#111827] border-b border-slate-800 p-3 sticky top-0 z-50 no-print">
         <div class="max-w-full mx-auto flex flex-wrap justify-between items-center gap-3">
             <div class="flex items-center gap-3">
@@ -94,9 +102,9 @@
             <div class="mt-4 flex flex-wrap gap-3 p-3 bg-slate-900/50 rounded-xl border border-slate-800">
                 <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#059669] rounded"></div> SZABADSÁG (óra)</div>
                 <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#ea580c] rounded"></div> BETEGÁLLOMÁNY (BÁ)</div>
-                <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#7c3aed] rounded"></div> IGAZOLATLAN (IG)</div>
-                <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#2563eb] rounded"></div> TÚLÓRA (TU)</div>
-                <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#d97706] rounded"></div> KÉSÉS (KÉ)</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#7c3aed] rounded"></div> IGAZOLT (IG)</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#2563eb] rounded"></div> TANULMÁNYI (TU)</div>
+                <div class="flex items-center gap-2 text-[10px] font-bold"><div class="w-3 h-3 bg-[#d97706] rounded"></div> KÉPZÉS (KÉ)</div>
             </div>
         </div>
         <div id="view-stats" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-4"></div>
@@ -140,12 +148,14 @@
         }
 
         async function loadFromCloud() {
+            setSyncStatus('saving');
             try {
                 const response = await fetch(`${BASE_DB_URL}shift_${currentShift}.json`);
                 const data = await response.json();
                 employees = (data && Array.isArray(data)) ? data : [];
                 render();
-                scrollToToday();
+                if(document.getElementById('view-stats').className === "") renderStats();
+                setSyncStatus('ok');
             } catch (e) { setSyncStatus('error'); }
         }
 
@@ -154,7 +164,7 @@
             if(todayCell) {
                 setTimeout(() => {
                     todayCell.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }, 100);
+                }, 300);
             }
         }
 
@@ -237,6 +247,7 @@
                 body += `</tr>`;
             });
             document.getElementById('tableBody').innerHTML = body;
+            scrollToToday();
         }
 
         function renderStats() {
@@ -247,9 +258,9 @@
                 });
                 return `<div class="bg-slate-800/40 p-4 rounded-xl border border-slate-700 relative">
                     <h3 class="text-sm font-black mb-2 truncate">${emp.name}</h3>
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                        <div class="bg-slate-900 p-2 rounded-lg text-center"><p class="text-[8px] text-slate-500 uppercase">Kivehető</p><p class="text-sm font-black text-emerald-500">${emp.yearlyQuota - s.S}</p></div>
-                        <div class="bg-slate-900 p-2 rounded-lg text-center"><p class="text-[8px] text-slate-500 uppercase">Szabadság</p><p class="text-sm font-black text-white">${s.S}</p></div>
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-center">
+                        <div class="bg-slate-900 p-2 rounded-lg"><p class="text-[8px] text-slate-500 uppercase">Kivehető</p><p class="text-sm font-black text-emerald-500">${emp.yearlyQuota - s.S}</p></div>
+                        <div class="bg-slate-900 p-2 rounded-lg"><p class="text-[8px] text-slate-500 uppercase">Szabadság</p><p class="text-sm font-black text-white">${s.S}</p></div>
                     </div>
                     <div class="flex justify-between text-[9px] font-bold text-slate-400 bg-slate-900/50 p-2 rounded-lg">
                         <div class="text-center"><span class="block text-orange-500 font-black">${s.BA}</span>BÁ</div>
